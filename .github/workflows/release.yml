@@ -1,0 +1,35 @@
+name: Assinar e publicar release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  sign-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm ci
+
+      - name: Assinar extensão via AMO
+        env:
+          WEB_EXT_API_KEY: ${{ secrets.WEB_EXT_API_KEY }}
+          WEB_EXT_API_SECRET: ${{ secrets.WEB_EXT_API_SECRET }}
+        run: node node_modules/web-ext/bin/web-ext sign --channel=unlisted
+
+      - name: Renomear xpi assinado
+        run: node scripts/rename-xpi.js
+
+      - name: Criar release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: web-ext-artifacts/suap_ifto.xpi
