@@ -1,5 +1,21 @@
 {
+  "scripts": {
+    "build": "web-ext build --overwrite-dest --filename=suap_ifto.zip",
+    "sign": "web-ext sign --channel=unlisted && npm run rename-xpi",
+    "rename-xpi": "node scripts/rename-xpi.js"
+  },
   "dependencies": {
     "web-ext": "^6.8.0"
+  },
+  "webExt": {
+    "ignoreFiles": [
+      "package.json",
+      "package-lock.json",
+      "README.md",
+      "scripts/**",
+      "web-ext-artifacts/**",
+      ".amo-upload-uuid",
+      ".web-extension-id"
+    ]
   }
 }
