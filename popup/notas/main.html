@@ -6,7 +6,12 @@
 </head>
 <body>
   <p>Notas</p>
+  <div class="modo">
+    <label><input type="radio" name="modo" value="csv" checked> CSV</label>
+    <label><input type="radio" name="modo" value="texto"> Texto</label>
+  </div>
   <input type="file" id="csv" accept=".csv,text/csv">
+  <div id="csv-mapeamento"></div>
   <textarea id="lista"></textarea>
   <br>
   <button type="button" id="botao">Confirmar notas</button>
