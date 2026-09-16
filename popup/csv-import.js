@@ -61,29 +61,59 @@
 		return { cabecalhos: cabecalhos, linhas: linhasDados };
 	}
 
+	function indicesValoresSelecionados() {
+		return Array.prototype.slice
+			.call(document.querySelectorAll(".csv-col-valor:checked"))
+			.map(function (checkbox) {
+				return parseInt(checkbox.value, 10);
+			});
+	}
+
 	function recalcularLista() {
 		var select = document.getElementById("csv-col-matricula");
 		if (!select || !window.csvLinhasDados) {
 			return;
 		}
 		var idxMatricula = parseInt(select.value, 10);
-		var idxValores = Array.prototype.slice
-			.call(document.querySelectorAll(".csv-col-valor:checked"))
-			.map(function (checkbox) {
-				return parseInt(checkbox.value, 10);
-			});
+		var idxValores = indicesValoresSelecionados();
+		var checkboxX10 = document.getElementById("csv-x10");
+		var multiplicarPor10 = !!(checkboxX10 && checkboxX10.checked);
 
 		var linhasSaida = window.csvLinhasDados.map(function (linha) {
 			var matricula = limparCampo(linha[idxMatricula]);
 			var valores = idxValores.map(function (idx) {
-				var checkboxX10 = document.querySelector('.csv-col-x10[value="' + idx + '"]');
-				var multiplicarPor10 = !!(checkboxX10 && checkboxX10.checked);
 				return aplicarEscala(limparCampo(linha[idx]), multiplicarPor10);
 			});
 			return [matricula].concat(valores).join(" ");
 		});
 
 		document.getElementById("lista").value = linhasSaida.join("\n");
+	}
+
+	// Se nenhuma nota das colunas selecionadas passar de 10, sugere marcar o
+	// ×10 (comum em exports com notas na escala 0-10, como o Moodle).
+	function sugerirX10() {
+		var checkboxX10 = document.getElementById("csv-x10");
+		if (!checkboxX10 || !window.csvLinhasDados) {
+			return;
+		}
+		var idxValores = indicesValoresSelecionados();
+		var maiorValor = -Infinity;
+		var encontrouNumero = false;
+
+		window.csvLinhasDados.forEach(function (linha) {
+			idxValores.forEach(function (idx) {
+				var numero = Number(limparCampo(linha[idx]).replace(",", "."));
+				if (!isNaN(numero)) {
+					encontrouNumero = true;
+					if (numero > maiorValor) {
+						maiorValor = numero;
+					}
+				}
+			});
+		});
+
+		checkboxX10.checked = encontrouNumero && maiorValor <= 10;
 	}
 
 	function atualizarDisponibilidadeColunas() {
@@ -96,20 +126,9 @@
 			} else {
 				checkbox.disabled = false;
 			}
-			atualizarDisponibilidadeX10(checkbox);
 		});
+		sugerirX10();
 		recalcularLista();
-	}
-
-	function atualizarDisponibilidadeX10(checkboxValor) {
-		var checkboxX10 = document.querySelector('.csv-col-x10[value="' + checkboxValor.value + '"]');
-		if (!checkboxX10) {
-			return;
-		}
-		if (!checkboxValor.checked) {
-			checkboxX10.checked = false;
-		}
-		checkboxX10.disabled = checkboxValor.disabled || !checkboxValor.checked;
 	}
 
 	function renderMapeamento(cabecalhos) {
@@ -141,10 +160,18 @@
 		var tituloValores = document.createElement("p");
 		tituloValores.textContent = "Colunas a lançar (na ordem das etapas/avaliações):";
 		linhaValores.appendChild(tituloValores);
-		cabecalhos.forEach(function (nome, indice) {
-			var linhaColuna = document.createElement("div");
-			linhaColuna.className = "csv-linha-coluna";
 
+		var labelX10 = document.createElement("label");
+		labelX10.className = "csv-x10-sugestao";
+		labelX10.title = "Multiplica todas as colunas marcadas abaixo por 10 (ex.: notas de 0 a 10 para a escala de 0 a 100 do SUAP)";
+		var checkboxX10 = document.createElement("input");
+		checkboxX10.type = "checkbox";
+		checkboxX10.id = "csv-x10";
+		labelX10.appendChild(checkboxX10);
+		labelX10.appendChild(document.createTextNode(" Multiplicar por 10 (notas na escala 0-10)"));
+		linhaValores.appendChild(labelX10);
+
+		cabecalhos.forEach(function (nome, indice) {
 			var labelValor = document.createElement("label");
 			var checkboxValor = document.createElement("input");
 			checkboxValor.type = "checkbox";
@@ -152,32 +179,17 @@
 			checkboxValor.value = String(indice);
 			labelValor.appendChild(checkboxValor);
 			labelValor.appendChild(document.createTextNode(" " + (nome || ("Coluna " + (indice + 1)))));
-			linhaColuna.appendChild(labelValor);
-
-			var labelX10 = document.createElement("label");
-			labelX10.title = "Multiplicar os valores desta coluna por 10 (ex.: notas de 0 a 10 para a escala de 0 a 100 do SUAP)";
-			var checkboxX10 = document.createElement("input");
-			checkboxX10.type = "checkbox";
-			checkboxX10.className = "csv-col-x10";
-			checkboxX10.value = String(indice);
-			checkboxX10.disabled = true;
-			labelX10.appendChild(checkboxX10);
-			labelX10.appendChild(document.createTextNode(" ×10"));
-			linhaColuna.appendChild(labelX10);
-
-			linhaValores.appendChild(linhaColuna);
+			linhaValores.appendChild(labelValor);
 		});
 		container.appendChild(linhaValores);
 
 		selectMatricula.addEventListener("change", atualizarDisponibilidadeColunas);
+		checkboxX10.addEventListener("change", recalcularLista);
 		container.querySelectorAll(".csv-col-valor").forEach(function (checkbox) {
 			checkbox.addEventListener("change", function () {
-				atualizarDisponibilidadeX10(checkbox);
+				sugerirX10();
 				recalcularLista();
 			});
-		});
-		container.querySelectorAll(".csv-col-x10").forEach(function (checkbox) {
-			checkbox.addEventListener("change", recalcularLista);
 		});
 
 		atualizarDisponibilidadeColunas();

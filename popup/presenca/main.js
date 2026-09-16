@@ -28,7 +28,8 @@ document.addEventListener("click", function (e) {
 				mensagem: lista
 			});
 		}).then((resumo)=>{
-			exibirResultado(resumo);
+			exibirResultado("");
+			alert(resumo);
 		}).catch((erro)=>{
 			exibirResultado("Erro ao lançar presença: " + erro.message);
 		});
