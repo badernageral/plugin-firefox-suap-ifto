@@ -45,7 +45,8 @@
 		if (alunos_duplicados != "") {
 			alunos_duplicados = "\n\nAlunos duplicados:" + alunos_duplicados;
 		}
-		alert("Você informou " + alunos.length + " alunos.\nForam encontrados " + alunos_encontrados + " alunos." + alunos_nao_encontrados + alunos_duplicados);
+		var resumo = "Você informou " + alunos.length + " alunos.\nForam encontrados " + alunos_encontrados + " alunos." + alunos_nao_encontrados + alunos_duplicados;
+		return Promise.resolve(resumo);
 	}
 
 	browser.runtime.onMessage.addListener(mensagemRecebida);
