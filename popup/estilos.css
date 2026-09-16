@@ -1,7 +1,7 @@
 body {
     background-color: gray;
     padding: 0 5px;
-    width: 90%;
+    min-width: 320px;
     text-align: center;
 }
 a{

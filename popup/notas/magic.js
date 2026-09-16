@@ -19,7 +19,7 @@
 				matriculas = tabelas[q].querySelectorAll("dd a");
 				for (var i = 0; i < matriculas.length; i++) {
 					if (matriculas[i].innerHTML.trim().toLowerCase()==alunos[j][0].trim().toLowerCase()) {
-						var notas = matriculas[i].parentNode.parentNode.parentNode.parentNode.querySelectorAll("input.int:not(.disabled-input)");
+						var notas = matriculas[i].closest("tr").querySelectorAll("input.int:not(.disabled-input)");
 						for(var k=0;k<notas.length;k++){
 							if (alunos[j][k+1] != undefined){
 								notas[k].value = alunos[j][k+1];
