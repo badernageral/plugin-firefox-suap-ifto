@@ -19,16 +19,15 @@ Publicando uma nova versão (assinatura via AMO)
 --
 O `.xpi` distribuído aqui é assinado pela Mozilla (self-distribution / canal "unlisted" no [addons.mozilla.org](https://addons.mozilla.org)), então instala direto em qualquer Firefox, sem precisar da versão Developer.
 
-Para gerar uma nova versão assinada:
+A assinatura e a publicação da release são automáticas via GitHub Actions ([.github/workflows/release.yml](.github/workflows/release.yml)), disparadas por push de tag `v*.*.*`. **Sempre que fizer bump de versão, siga os passos abaixo — o bump sozinho não gera release:**
+
 1. Atualize `version` em `manifest.json`.
-2. Gere suas credenciais de API em https://addons.mozilla.org/pt-BR/developers/addon/api/key/ (uma vez só).
-3. Exporte as credenciais no seu terminal (não commitar):
+2. Commit e push para `main`.
+3. Crie e envie uma tag anotada com o mesmo número de versão, prefixada com `v`:
    ```bash
-   export WEB_EXT_API_KEY=SEU_JWT_ISSUER
-   export WEB_EXT_API_SECRET=SEU_JWT_SECRET
+   git tag -a vX.Y.Z -m "vX.Y.Z"
+   git push origin vX.Y.Z
    ```
-4. Rode:
-   ```bash
-   npm run sign
-   ```
-5. Commit o novo `web-ext-artifacts/suap_ifto.xpi`.
+4. O workflow assina o `.xpi` via AMO e cria a release no GitHub automaticamente — acompanhe em Actions.
+
+As credenciais de assinatura (`WEB_EXT_API_KEY`/`WEB_EXT_API_SECRET`, geradas em https://addons.mozilla.org/pt-BR/developers/addon/api/key/) já estão configuradas como secrets do repositório; não é necessário exportá-las localmente nem rodar `npm run sign` manualmente.
