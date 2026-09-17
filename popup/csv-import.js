@@ -12,6 +12,10 @@
 	];
 	var CABECALHOS_MATRICULA_FALLBACK = ["aluno", "nome"];
 
+	function ehLancamentoDeNotas() {
+		return document.body.getAttribute("data-tipo") === "notas";
+	}
+
 	function indiceColunaMatricula(cabecalhos) {
 		var cabecalhosMinusculos = cabecalhos.map(function (nome) {
 			return nome.toLowerCase();
@@ -161,15 +165,18 @@
 		tituloValores.textContent = "Colunas a lançar (na ordem das etapas/avaliações):";
 		linhaValores.appendChild(tituloValores);
 
-		var labelX10 = document.createElement("label");
-		labelX10.className = "csv-x10-sugestao";
-		labelX10.title = "Multiplica todas as colunas marcadas abaixo por 10 (ex.: notas de 0 a 10 para a escala de 0 a 100 do SUAP)";
-		var checkboxX10 = document.createElement("input");
-		checkboxX10.type = "checkbox";
-		checkboxX10.id = "csv-x10";
-		labelX10.appendChild(checkboxX10);
-		labelX10.appendChild(document.createTextNode(" Multiplicar por 10 (notas na escala 0-10)"));
-		linhaValores.appendChild(labelX10);
+		var checkboxX10 = null;
+		if (ehLancamentoDeNotas()) {
+			var labelX10 = document.createElement("label");
+			labelX10.className = "csv-x10-sugestao";
+			labelX10.title = "Multiplica todas as colunas marcadas abaixo por 10 (ex.: notas de 0 a 10 para a escala de 0 a 100 do SUAP)";
+			checkboxX10 = document.createElement("input");
+			checkboxX10.type = "checkbox";
+			checkboxX10.id = "csv-x10";
+			labelX10.appendChild(checkboxX10);
+			labelX10.appendChild(document.createTextNode(" Multiplicar por 10 (notas na escala 0-10)"));
+			linhaValores.appendChild(labelX10);
+		}
 
 		cabecalhos.forEach(function (nome, indice) {
 			var labelValor = document.createElement("label");
@@ -184,7 +191,9 @@
 		container.appendChild(linhaValores);
 
 		selectMatricula.addEventListener("change", atualizarDisponibilidadeColunas);
-		checkboxX10.addEventListener("change", recalcularLista);
+		if (checkboxX10) {
+			checkboxX10.addEventListener("change", recalcularLista);
+		}
 		container.querySelectorAll(".csv-col-valor").forEach(function (checkbox) {
 			checkbox.addEventListener("change", function () {
 				sugerirX10();
