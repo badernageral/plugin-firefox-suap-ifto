@@ -36,6 +36,13 @@
 	}
 
 	function aplicarEscala(valor, multiplicarPor10) {
+		// "sem nota" (vazio ou "-") vira sempre "-": Number("") é 0, o que
+		// lançaria presença/nota zero indevidamente, e um campo vazio
+		// sumiria ao remontar a linha com espaços, deslocando as colunas
+		// seguintes.
+		if (valor === "" || valor === "-") {
+			return "-";
+		}
 		var numero = Number(valor.replace(",", "."));
 		if (isNaN(numero)) {
 			return valor;
